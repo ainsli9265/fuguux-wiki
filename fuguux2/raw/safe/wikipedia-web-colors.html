@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Web colors – Wikipedia</title>
+<meta name="source" content="https://en.wikipedia.org/wiki/Web_colors">
+<meta name="retrieved" content="2026-06-25">
+<meta name="license" content="CC BY-SA 4.0 — https://creativecommons.org/licenses/by-sa/4.0/">
+</head>
+<body>
+
+<h1>Web colors</h1>
+
+<h2>Hex Triplet</h2>
+
+<p>A hex triplet is a six-digit (or eight-digit), three-byte (or four-byte) hexadecimal number used in HTML, CSS, and SVG to represent a color. Each pair of digits represents red, green, and blue channel intensity (00–FF), producing 16,777,216 possible colors (2²⁴). A shorthand three-digit form exists, reducing the palette to 4,096 colors. Leading zeros are required (e.g., 04, 08, 0F). The eight-digit form adds an alpha (transparency) byte.</p>
+
+<p><strong>sRGB</strong> is the standard color space for web colors. One byte per component represents 0–255 intensity. Colors outside sRGB require the CSS <code>RGB()</code> function with values exceeding 100%.</p>
+
+<h2>HTML Color Names</h2>
+
+<h3>Basic 16 colors (HTML 4.01, 1999)</h3>
+<p>white, silver, gray, black, red, maroon, yellow, olive, lime, green, aqua, teal, blue, navy, fuchsia, purple.</p>
+
+<h3>Extended colors</h3>
+<p>Derived from merging HTML 4.01, CSS 2.0, SVG 1.0, and CSS3 specifications. Approximately 124 additional named colors from the X11 color name set (originally from X Window System applications, first used in web browsers by early Mosaic and Netscape Navigator). CSS 2.1 added "orange" as a 17th basic color.</p>
+
+<p>Color families: pink, red, orange, yellow, brown, purple/violet/magenta, blue, cyan, green, white, gray — each with named variants and specific hex/RGB values.</p>
+
+<h2>CSS Colors</h2>
+
+<p>CSS specifications define named colors and functional notation:</p>
+<ul>
+  <li>RGB: integer (0–255) or percentage values per channel.</li>
+  <li>RGBA: RGB plus an alpha channel for transparency.</li>
+  <li>HSL: hue (0–360°), saturation (0–100%), lightness (0–100%).</li>
+  <li>HSLA: HSL plus alpha transparency.</li>
+  <li>HWB: hue, whiteness, blackness (introduced in CSS Color Level 4).</li>
+  <li>The <code>transparent</code> keyword.</li>
+  <li>System colors (deprecated in CSS3): allowed styling based on the operating system's own UI color palette.</li>
+</ul>
+
+<h2>CSS Color Level 4 and Level 5</h2>
+
+<p>Level 4 introduces device-independent color spaces: CIE Lab, CIE LCH, OKLab, OKLCH, and XYZ. These allow wider-gamut colors beyond sRGB. Wide-gamut RGB profiles added: Display P3, ProPhoto, REC.2020, and Adobe RGB.</p>
+
+<p><strong>RebeccaPurple (#663399)</strong> was added to the CSS specification in 2014 as a memorial for Rebecca Meyer, daughter of CSS Working Group member Eric Meyer.</p>
+
+<p>Level 5 (draft) includes the <code>color-mix()</code> function for blending two colors, and relative color syntax for adjusting one color relative to another.</p>
+
+<h2>Web-Safe Colors</h2>
+
+<p>In the mid-1990s, most monitors could display only 256 colors simultaneously. Colors outside a system's palette were <em>dithered</em> — rendered as a pattern of two nearby palette colors — producing a speckled texture rather than a solid fill. To avoid this, web designers used a standardized "web-safe" palette of 216 colors built from six equally-spaced hex values (00, 33, 66, 99, CC, FF) per RGB channel (6³ = 216).</p>
+
+<p>Even this palette was an overcount: only 22 of the 216 colors are "really safe" on 16-bit displays — predominantly greens, yellows, and cyans. The article includes a full 216-color reference table organized by hex code.</p>
+
+<p>By the early 2000s, 24-bit TrueColor displays had become standard, making web-safe colors practically obsolete.</p>
+
+<h2>Accessibility</h2>
+
+<h3>Color selection</h3>
+<p>Both foreground (text) and background colors should be specified explicitly, rather than relying on browser defaults for one while setting the other. If only one is set, a user with a custom browser color scheme may end up with an unreadable combination — e.g., white text on a white background, or black text on a black background.</p>
+
+<h3>Color contrast</h3>
+<p>WCAG defines minimum contrast ratios between foreground and background:</p>
+<ul>
+  <li><strong>4.5:1</strong> — minimum for normal-size text (WCAG AA, success criterion 1.4.3).</li>
+  <li><strong>3:1</strong> — minimum for large text (WCAG AA).</li>
+  <li><strong>7:1</strong> — enhanced contrast for normal text (WCAG AAA).</li>
+</ul>
+<p>The article notes that dyslexic readers may benefit from contrast ratios <em>below</em> the maximum AAA recommendation — meaning very high contrast is not universally optimal and AAA should be understood as a ceiling to approach rather than a universal goal.</p>
+
+<h2>Historical Context</h2>
+
+<p>Early web browsers (Mosaic, Netscape Navigator) adopted X11 color names from X Window System desktop applications. By the 2000s, 24-bit TrueColor displays made web-safe colors obsolete, and the browser color-name repertoire was standardized across HTML, CSS, and SVG specifications.</p>
+
+<h2>Standards Bodies</h2>
+
+<p>W3C (CSS Working Group, SVG Working Group), WHATWG.</p>
+
+<h2>Images and Tables in Article</h2>
+<ul>
+  <li>Basic HTML colors diagram.</li>
+  <li>SVG version of X11 color names chart.</li>
+  <li>SVG 1.1 named colors table with hex, decimal, and HSL codes (4K resolution image).</li>
+  <li>216-color web-safe color table organized by hex code.</li>
+  <li>"Safest web colors" reference table (22 colors).</li>
+</ul>
+<p>All images hosted on Wikimedia Commons.</p>
+
+<hr>
+<p><em>License: CC BY-SA 4.0 — <a href="https://creativecommons.org/licenses/by-sa/4.0/">https://creativecommons.org/licenses/by-sa/4.0/</a></em></p>
+<p><em>Source URL: https://en.wikipedia.org/wiki/Web_colors</em></p>
+<p><em>Retrieved: 2026-06-25</em></p>
+
+</body>
+</html>

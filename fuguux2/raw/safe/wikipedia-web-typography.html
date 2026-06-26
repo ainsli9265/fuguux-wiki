@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Web typography – Wikipedia</title>
+<meta name="source" content="https://en.wikipedia.org/wiki/Web_typography">
+<meta name="retrieved" content="2026-06-25">
+<meta name="license" content="CC BY-SA 4.0 — https://creativecommons.org/licenses/by-sa/4.0/">
+</head>
+<body>
+
+<h1>Web typography</h1>
+
+<p>Web typography addresses design challenges specific to web pages, distinguishing itself from print typography through dynamic presentation capabilities: "pages intended for display on the World Wide Web have additional technical challenges and – given its ability to change the presentation dynamically – additional opportunities."</p>
+
+<h2>CSS1 and Foundational Font Properties</h2>
+
+<p>The first CSS specification identified five core font properties: <code>font-family</code>, <code>font-style</code>, <code>font-variant</code>, <code>font-weight</code>, and <code>font-size</code>. All fonts were identified purely by name; designers lacked styling mechanisms for fonts unavailable on client systems.</p>
+
+<h3>Web-Safe Fonts</h3>
+
+<p>Web-safe fonts represent computer typefaces reasonably expected to be present across operating systems and devices. They increase "the likelihood that content displays in their chosen font" by relying on fallback mechanisms when specified fonts are unavailable.</p>
+
+<h3>Microsoft's Core Fonts for the Web (1996–2002)</h3>
+
+<p>Microsoft launched this initiative in 1996 and terminated it in 2002. It distributed Arial, Courier New, Times New Roman, Comic Sans, Impact, Georgia, Trebuchet, Webdings, and Verdana under an EULA allowing free distribution. These fonts became "de facto fonts of the Web." Linux distributions typically exclude them by default.</p>
+
+<h3>Fallback Fonts and Font Stacks</h3>
+
+<p>The CSS <code>font-family</code> property accepts a comma-separated list of typeface names. Browsers sequentially attempt each listed font and fall through to the next if the preferred one is unavailable, ultimately defaulting to the browser's own default fonts if none match. Example:</p>
+<pre><code>font-family: "Nimbus Sans L", Helvetica, Arial, sans-serif;</code></pre>
+
+<h3>Generic Font Families</h3>
+
+<p>Five generic font families provide a design-intent fallback of last resort:</p>
+<ul>
+  <li><strong>sans-serif</strong> — lacking decorative markings; considered easier for screen reading</li>
+  <li><strong>serif</strong> — featuring decorative markings; traditionally associated with printed materials</li>
+  <li><strong>monospace</strong> — all characters equally wide</li>
+  <li><strong>cursive</strong> — resembling handwriting; difficult to read at small sizes</li>
+  <li><strong>fantasy</strong> — containing decorative or symbolic characters while representing specified characters</li>
+</ul>
+
+<h3>CSS Fonts Working Draft 4 (as of February 2024)</h3>
+
+<p>W3C proposes system-level font specification through <code>ui</code> tags with limited current browser support: <code>system-ui</code>, <code>ui-serif</code>, <code>ui-sans-serif</code>, <code>ui-monospace</code>, <code>ui-rounded</code>, <code>emoji</code>, <code>math</code>, and <code>fangsong</code> (a Chinese typeface between serif and cursive styles).</p>
+
+<h2>Web Fonts</h2>
+
+<h3>Historical Development</h3>
+
+<p>CSS2 (1998) introduced the <code>@font-face</code> construct for remote font downloading, though font licensing concerns existed. Internet Explorer 4 (1997) pioneered support through Embedded OpenType (EOT) fonts using Microsoft's proprietary WEFT tool.</p>
+
+<p>In 2006, Håkon Wium Lie initiated efforts promoting standard font formats over EOT. Support for TrueType and OpenType subsequently appeared in Safari 3.1, Opera 10, Mozilla Firefox 3.5, and Internet Explorer 9.</p>
+
+<p>The Web Open Font Format (WOFF) was submitted to W3C in 2010 by Mozilla Foundation, Opera Software, and Microsoft. Google Fonts launched in 2010 under open-source licenses, reaching 800+ families by 2016. "As of 2016 a majority of sites use webfonts," demonstrating technology maturation.</p>
+
+<h3>File Format Specifications</h3>
+
+<p><strong>TrueDoc</strong>: Developed by Bitstream in 1994. Supported native embedding in Netscape Navigator 4 (1996) but lost support in Navigator 6 due to open-source licensing constraints. Lost to Microsoft's competing EOT format.</p>
+
+<p><strong>Embedded OpenType (EOT)</strong>: Supported in Internet Explorer since version 4.0. Employed DRM techniques preventing unauthorized font copying. A simplified subset, CWT (Compatibility Web Type, formerly EOT-Lite), was formally standardized.</p>
+
+<p><strong>SVG Fonts</strong>: A W3C standard that allowed multicolor and animated fonts as SVG graphic subsets before deprecation in SVG 2.0. Most browsers except IE and Firefox supported it; Chrome deprecated standalone usage. Firefox supports SVG OpenType since version 26.</p>
+
+<p><strong>TrueType/OpenType (TTF/OTF)</strong>: Industry-standard formats. Support: Firefox 3.5+, Opera 10+, Safari 3.1+, Chrome 4.0+. IE9+ requires fonts with installable embedding permissions.</p>
+
+<p><strong>Web Open Font Format (WOFF)</strong>: Combines OpenType or TrueType with compression and metadata. Support: Firefox 3.6+, Chrome 5+, Opera Presto, IE9+ (from March 2011), Safari 5.1+.</p>
+
+<h2>Unicode Fonts</h2>
+
+<p>A "Unicode font" maps glyphs to Unicode Standard code points. The designation "has become redundant since the vast majority of modern computer fonts use Unicode mappings." TrueType fonts support a maximum of 65,535 glyphs, insufficient for all 159,801 Unicode 17.0 characters.</p>
+
+<p>Windows includes Microsoft Sans Serif and Lucida Sans Unicode for wide Unicode repertoires. Linux offers GNU Unifont and GNU FreeFont. ChromeOS features Google's Noto fonts, designed to support all Unicode-encoded scripts.</p>
+
+<h2>Alternatives (Pre-Web-Font Era)</h2>
+
+<p>Before web fonts became practical, designers addressed the lack of typographic control through several strategies — most now obsolete or anti-pattern:</p>
+
+<ul>
+  <li><strong>Font substitution</strong>: replacing unavailable fonts with similar web-safe alternatives. The simplest approach; still valid as a fallback stack strategy.</li>
+  <li><strong>Image replacement</strong>: overlaying text with images rendered in the desired typeface. This achieves typographic control but prevents text selection, increases bandwidth usage, harms search engine optimization, and creates accessibility barriers for users relying on assistive technology. Web fonts have made this approach obsolete for body text and headings.</li>
+  <li><strong>Flash (sIFR)</strong>: rendered selectable vector text in the desired font but required a proprietary plugin. Now obsolete.</li>
+  <li><strong>JavaScript (VML/SVG)</strong>: replaced text with vector graphics via VML (Internet Explorer) or SVG (other browsers). Now superseded by web fonts.</li>
+</ul>
+
+<h2>Images in Article</h2>
+<ul>
+  <li>"Web fonts.svg" — diagram illustrating how web fonts allow designers to use fonts not installed on the viewer's computer.</li>
+  <li>"3 Core Fonts for the Web.png" — displays Arial, Georgia, and Verdana identified as "de facto fonts of the Web."</li>
+</ul>
+<p>Both images hosted on Wikimedia Commons.</p>
+
+<hr>
+<p><em>License: CC BY-SA 4.0 — <a href="https://creativecommons.org/licenses/by-sa/4.0/">https://creativecommons.org/licenses/by-sa/4.0/</a></em></p>
+<p><em>Source URL: https://en.wikipedia.org/wiki/Web_typography</em></p>
+<p><em>Retrieved: 2026-06-25</em></p>
+
+</body>
+</html>

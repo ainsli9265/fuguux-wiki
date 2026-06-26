@@ -157,6 +157,10 @@
     overflow: visible;
   }
 
+  .result-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .result-tag { font-size: 11px; color: var(--accent-text); background: var(--accent-bg); border-radius: 4px; padding: 1px 6px; cursor: pointer; }
+  .result-tag:hover { opacity: 0.8; }
+
   .result-matches { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
 
   .match-pill {
@@ -191,7 +195,10 @@
     padding: 0 1px;
   }
 
-  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 0.5rem; }
+
+  .filter-section { margin-bottom: 1rem; }
+  .filter-label { font-size: 11px; color: var(--text-hint); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px; }
 
   .filter-btn {
     height: 28px;
@@ -268,7 +275,16 @@
 <main>
   <div id="error-msg"></div>
   <div id="status-bar"><span class="spinner"></span> Loading index…</div>
-  <div id="filters" class="filters" style="display:none"></div>
+  <div id="filter-wrap" style="display:none">
+    <div class="filter-section">
+      <div class="filter-label">Folder</div>
+      <div id="filters" class="filters"></div>
+    </div>
+    <div class="filter-section" id="tag-filter-section" style="display:none">
+      <div class="filter-label">Tags</div>
+      <div id="tag-filters" class="filters"></div>
+    </div>
+  </div>
   <div id="results"></div>
   <div id="empty-state" style="display:none">
     <h2>No results found</h2>
@@ -282,6 +298,9 @@ const searchInput = $('search-input');
 const resultsEl = $('results');
 const statusEl = $('status-bar');
 const filtersEl = $('filters');
+const tagFiltersEl = $('tag-filters');
+const filterWrap = $('filter-wrap');
+const tagFilterSection = $('tag-filter-section');
 const emptyState = $('empty-state');
 const errorMsg = $('error-msg');
 
@@ -289,12 +308,23 @@ let index = [];
 let currentQuery = '';
 let debounceTimer;
 
+function parseTags(text) {
+  const m = text.match(/^---[\s\S]*?^tags:\s*\[([^\]]*)\]/m);
+  if (!m) return [];
+  return m[1].split(',').map(t => t.trim().replace(/^["']|["']$/g, '')).filter(Boolean);
+}
+
 async function loadIndex() {
   try {
     const res = await fetch('./search-index.json');
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    index = data.map(f => ({ ...f, lowerText: f.text.toLowerCase(), lowerTitle: f.title.toLowerCase() }));
+    index = data.map(f => ({
+      ...f,
+      lowerText: f.text.toLowerCase(),
+      lowerTitle: f.title.toLowerCase(),
+      tags: parseTags(f.text)
+    }));
     onIndexLoaded();
   } catch (e) {
     statusEl.innerHTML = '';
@@ -308,17 +338,17 @@ function onIndexLoaded() {
   searchInput.disabled = false;
   searchInput.focus();
   buildFolderFilters();
+  buildTagFilters();
   renderResults('');
 }
 
 function buildFolderFilters() {
   const folders = new Set(index.map(f => f.path.includes('/') ? f.path.split('/')[0] : ''));
-  if (folders.size < 2 || (folders.size === 1 && folders.has(''))) {
-    filtersEl.style.display = 'none';
-    return;
-  }
+  const hasMultiple = folders.size >= 2 && !(folders.size === 1 && folders.has(''));
 
-  filtersEl.style.display = 'flex';
+  if (!hasMultiple) return;
+
+  filterWrap.style.display = 'block';
   filtersEl.innerHTML = '';
 
   const allBtn = document.createElement('button');
@@ -345,6 +375,42 @@ function buildFolderFilters() {
   });
 }
 
+function buildTagFilters() {
+  const tagCounts = new Map();
+  for (const f of index) {
+    for (const tag of f.tags) {
+      tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
+    }
+  }
+
+  if (tagCounts.size === 0) return;
+
+  filterWrap.style.display = 'block';
+  tagFilterSection.style.display = 'block';
+  tagFiltersEl.innerHTML = '';
+
+  const sorted = [...tagCounts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  for (const [tag] of sorted) {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn';
+    btn.textContent = tag;
+    btn.dataset.tag = tag;
+    tagFiltersEl.appendChild(btn);
+  }
+
+  tagFiltersEl.addEventListener('click', e => {
+    const btn = e.target.closest('.filter-btn');
+    if (!btn) return;
+    btn.classList.toggle('active');
+    renderResults(currentQuery);
+  });
+}
+
+function activateTag(tag) {
+  const btn = tagFiltersEl.querySelector('[data-tag="' + tag + '"]');
+  if (btn) { btn.classList.add('active'); renderResults(currentQuery); }
+}
+
 searchInput.addEventListener('input', () => {
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(() => {
@@ -363,10 +429,17 @@ function getActiveFolder() {
   return active ? active.dataset.folder : '';
 }
 
+function getActiveTags() {
+  return [...tagFiltersEl.querySelectorAll('.filter-btn.active')].map(b => b.dataset.tag);
+}
+
 function search(query, folderFilter) {
+  const activeTags = getActiveTags();
+
   if (!query.trim()) {
     let all = index;
     if (folderFilter) all = all.filter(f => f.path.split('/')[0] === folderFilter);
+    if (activeTags.length) all = all.filter(f => activeTags.some(t => f.tags.includes(t)));
     return all.map(f => ({ ...f, score: 0, snippets: [], matchCount: 0 })).slice(0, 50);
   }
 
@@ -375,12 +448,14 @@ function search(query, folderFilter) {
 
   for (const file of index) {
     if (folderFilter && file.path.split('/')[0] !== folderFilter) continue;
+    if (activeTags.length && !activeTags.some(t => file.tags.includes(t))) continue;
 
     let score = 0, matchCount = 0;
     const snippets = [];
 
     for (const term of terms) {
       if (file.lowerTitle.includes(term)) { score += 10; matchCount++; }
+      if (file.tags.some(tag => tag.includes(term))) { score += 5; matchCount++; }
 
       let pos = 0, found = 0;
       while ((pos = file.lowerText.indexOf(term, pos)) !== -1 && found < 3) {
@@ -439,18 +514,27 @@ function renderResults(query) {
       ? r.snippets[0].text
       : r.text.slice(0, 200).replace(/#+\s*/g, '');
 
+    const tagsHtml = r.tags.length
+      ? '<div class="result-tags">' + r.tags.map(t => '<span class="result-tag" data-tag="' + escHtml(t) + '">' + escHtml(t) + '</span>').join('') + '</div>'
+      : '';
+
     card.innerHTML =
       '<div class="result-header">' +
         '<div class="result-title">' + highlight(r.title, terms) + '</div>' +
         '<div class="result-path">' + escHtml(r.path) + '</div>' +
       '</div>' +
       '<div class="result-snippet">…' + highlight(snippetText, terms) + '…</div>' +
+      tagsHtml +
       (r.matchCount > 0 && query.trim()
         ? '<div class="result-matches"><span class="match-pill">' + r.matchCount + ' match' + (r.matchCount !== 1 ? 'es' : '') + '</span></div>'
         : '') +
       '<pre class="result-content">' + highlight(r.text, terms) + '</pre>';
 
-    card.addEventListener('click', () => card.classList.toggle('expanded'));
+    card.addEventListener('click', e => {
+      const tagEl = e.target.closest('.result-tag');
+      if (tagEl) { e.stopPropagation(); activateTag(tagEl.dataset.tag); return; }
+      card.classList.toggle('expanded');
+    });
     resultsEl.appendChild(card);
   }
 }
