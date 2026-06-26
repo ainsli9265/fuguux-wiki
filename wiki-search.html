@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wiki Search</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #fafaf9;
+    --surface: #ffffff;
+    --border: rgba(0,0,0,0.1);
+    --border-strong: rgba(0,0,0,0.18);
+    --text: #1a1a18;
+    --text-muted: #6b6b66;
+    --text-hint: #999993;
+    --accent: #dd3795;
+    --accent-bg: #fbe6f5;
+    --accent-text: #eb85bf;
+    --mark-bg: #fac775;
+    --mark-text: #412402;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1a;
+      --surface: #252523;
+      --border: rgba(255,255,255,0.09);
+      --border-strong: rgba(255,255,255,0.16);
+      --text: #eeeee8;
+      --text-muted: #a8a89f;
+      --text-hint: #6b6b66;
+      --accent: #dd3795;
+      --accent-bg: #500c31;
+      --accent-text: #eb85bf;
+      --mark-bg: #633806;
+      --mark-text: #fac775;
+    }
+  }
+
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  header {
+    background: var(--surface);
+    border-bottom: 0.5px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .logo {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .search-wrap {
+    flex: 1;
+    max-width: 600px;
+    position: relative;
+  }
+
+  .search-wrap svg {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-hint);
+    pointer-events: none;
+  }
+
+  #search-input {
+    width: 100%;
+    height: 36px;
+    padding: 0 12px 0 34px;
+    font-size: 14px;
+    background: var(--bg);
+    color: var(--text);
+    border: 0.5px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.15s;
+  }
+
+  #search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(55,138,221,0.18); }
+  #search-input::placeholder { color: var(--text-hint); }
+  #search-input:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+
+  #status-bar {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 1.25rem;
+    min-height: 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .tag { color: var(--accent-text); background: var(--accent-bg); padding: 1px 7px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+
+  #results { display: flex; flex-direction: column; gap: 10px; }
+
+  .result-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    transition: border-color 0.12s;
+  }
+
+  .result-card:hover { border-color: var(--border-strong); }
+  .result-card.expanded { border-color: var(--accent); }
+
+  .result-header { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+
+  .result-title { font-size: 15px; font-weight: 500; color: var(--text); flex: 1; }
+  .result-path { font-size: 12px; color: var(--text-hint); flex-shrink: 0; }
+
+  .result-snippet {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .result-card.expanded .result-snippet {
+    -webkit-line-clamp: unset;
+    overflow: visible;
+  }
+
+  .result-matches { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+
+  .match-pill {
+    font-size: 11px;
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 2px 8px;
+    color: var(--text-muted);
+  }
+
+  .result-content {
+    display: none;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 0.5px solid var(--border);
+    font-size: 13px;
+    color: var(--text);
+    white-space: pre-wrap;
+    font-family: ui-monospace, monospace;
+    max-height: 320px;
+    overflow-y: auto;
+    line-height: 1.6;
+  }
+
+  .result-card.expanded .result-content { display: block; }
+
+  mark {
+    background: var(--mark-bg);
+    color: var(--mark-text);
+    border-radius: 2px;
+    padding: 0 1px;
+  }
+
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem; }
+
+  .filter-btn {
+    height: 28px;
+    padding: 0 10px;
+    font-size: 12px;
+    background: var(--surface);
+    color: var(--text-muted);
+    border: 0.5px solid var(--border);
+    border-radius: 14px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color 0.12s, color 0.12s, background 0.12s;
+  }
+
+  .filter-btn:hover, .filter-btn.active {
+    border-color: var(--accent);
+    color: var(--accent-text);
+    background: var(--accent-bg);
+  }
+
+  #empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-muted);
+  }
+
+  #empty-state h2 { font-size: 16px; font-weight: 500; margin-bottom: 6px; color: var(--text); }
+  #empty-state p { font-size: 14px; }
+
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  #error-msg {
+    background: #fcebeb;
+    color: #a32d2d;
+    border: 0.5px solid #f09595;
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+    font-size: 13px;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+      <line x1="16" y1="13" x2="8" y2="13"/>
+      <line x1="16" y1="17" x2="8" y2="17"/>
+      <polyline points="10 9 9 9 8 9"/>
+    </svg>
+    FuguUX Wiki
+  </div>
+
+  <div class="search-wrap">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input type="text" id="search-input" placeholder="…" autocomplete="off" disabled />
+  </div>
+</header>
+
+<main>
+  <div id="error-msg"></div>
+  <div id="status-bar"><span class="spinner"></span> Loading index…</div>
+  <div id="filters" class="filters" style="display:none"></div>
+  <div id="results"></div>
+  <div id="empty-state" style="display:none">
+    <h2>No results found</h2>
+    <p id="empty-msg">Try a different query.</p>
+  </div>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const searchInput = $('search-input');
+const resultsEl = $('results');
+const statusEl = $('status-bar');
+const filtersEl = $('filters');
+const emptyState = $('empty-state');
+const errorMsg = $('error-msg');
+
+let index = [];
+let currentQuery = '';
+let debounceTimer;
+
+async function loadIndex() {
+  try {
+    const res = await fetch('./search-index.json');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    index = data.map(f => ({ ...f, lowerText: f.text.toLowerCase(), lowerTitle: f.title.toLowerCase() }));
+    onIndexLoaded();
+  } catch (e) {
+    statusEl.innerHTML = '';
+    errorMsg.style.display = 'block';
+    errorMsg.textContent = 'Could not load search-index.json. Run the build script first, then make sure it\'s in the same folder as this HTML file. (' + e.message + ')';
+  }
+}
+
+function onIndexLoaded() {
+  statusEl.innerHTML = '<span class="tag">' + index.length + ' files</span> indexed';
+  searchInput.disabled = false;
+  searchInput.focus();
+  buildFolderFilters();
+  renderResults('');
+}
+
+function buildFolderFilters() {
+  const folders = new Set(index.map(f => f.path.includes('/') ? f.path.split('/')[0] : ''));
+  if (folders.size < 2 || (folders.size === 1 && folders.has(''))) {
+    filtersEl.style.display = 'none';
+    return;
+  }
+
+  filtersEl.style.display = 'flex';
+  filtersEl.innerHTML = '';
+
+  const allBtn = document.createElement('button');
+  allBtn.className = 'filter-btn active';
+  allBtn.textContent = 'All';
+  allBtn.dataset.folder = '';
+  filtersEl.appendChild(allBtn);
+
+  const sorted = [...folders].filter(f => f).sort();
+  for (const f of sorted) {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn';
+    btn.textContent = f;
+    btn.dataset.folder = f;
+    filtersEl.appendChild(btn);
+  }
+
+  filtersEl.addEventListener('click', e => {
+    const btn = e.target.closest('.filter-btn');
+    if (!btn) return;
+    filtersEl.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderResults(currentQuery);
+  });
+}
+
+searchInput.addEventListener('input', () => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => {
+    currentQuery = searchInput.value;
+    renderResults(currentQuery);
+  }, 80);
+});
+
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); searchInput.focus(); searchInput.select(); }
+  if (e.key === 'Escape') searchInput.blur();
+});
+
+function getActiveFolder() {
+  const active = filtersEl.querySelector('.filter-btn.active');
+  return active ? active.dataset.folder : '';
+}
+
+function search(query, folderFilter) {
+  if (!query.trim()) {
+    let all = index;
+    if (folderFilter) all = all.filter(f => f.path.split('/')[0] === folderFilter);
+    return all.map(f => ({ ...f, score: 0, snippets: [], matchCount: 0 })).slice(0, 50);
+  }
+
+  const terms = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
+  const results = [];
+
+  for (const file of index) {
+    if (folderFilter && file.path.split('/')[0] !== folderFilter) continue;
+
+    let score = 0, matchCount = 0;
+    const snippets = [];
+
+    for (const term of terms) {
+      if (file.lowerTitle.includes(term)) { score += 10; matchCount++; }
+
+      let pos = 0, found = 0;
+      while ((pos = file.lowerText.indexOf(term, pos)) !== -1 && found < 3) {
+        score += 1; matchCount++; found++;
+        const start = Math.max(0, pos - 60);
+        const end = Math.min(file.text.length, pos + term.length + 80);
+        snippets.push({ text: file.text.slice(start, end), term });
+        pos += term.length;
+      }
+    }
+
+    if (matchCount > 0) results.push({ ...file, score, snippets, matchCount });
+  }
+
+  results.sort((a, b) => b.score - a.score);
+  return results.slice(0, 40);
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function highlight(text, terms) {
+  if (!terms.length) return escHtml(text);
+  let result = escHtml(text);
+  for (const term of terms) {
+    const escaped = escHtml(term).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    result = result.replace(new RegExp(escaped, 'gi'), m => '<mark>' + m + '</mark>');
+  }
+  return result;
+}
+
+function renderResults(query) {
+  const folder = getActiveFolder();
+  const terms = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
+  const results = search(query, folder);
+
+  resultsEl.innerHTML = '';
+
+  if (results.length === 0 && query.trim()) {
+    emptyState.style.display = 'block';
+    $('empty-msg').textContent = 'No results for "' + escHtml(query) + '".';
+    return;
+  }
+  emptyState.style.display = 'none';
+
+  if (query.trim()) {
+    statusEl.innerHTML = '<span class="tag">' + results.length + ' result' + (results.length !== 1 ? 's' : '') + '</span> for <strong>' + escHtml(query) + '</strong>';
+  }
+
+  for (const r of results) {
+    const card = document.createElement('div');
+    card.className = 'result-card';
+
+    const snippetText = r.snippets.length > 0
+      ? r.snippets[0].text
+      : r.text.slice(0, 200).replace(/#+\s*/g, '');
+
+    card.innerHTML =
+      '<div class="result-header">' +
+        '<div class="result-title">' + highlight(r.title, terms) + '</div>' +
+        '<div class="result-path">' + escHtml(r.path) + '</div>' +
+      '</div>' +
+      '<div class="result-snippet">…' + highlight(snippetText, terms) + '…</div>' +
+      (r.matchCount > 0 && query.trim()
+        ? '<div class="result-matches"><span class="match-pill">' + r.matchCount + ' match' + (r.matchCount !== 1 ? 'es' : '') + '</span></div>'
+        : '') +
+      '<pre class="result-content">' + highlight(r.text, terms) + '</pre>';
+
+    card.addEventListener('click', () => card.classList.toggle('expanded'));
+    resultsEl.appendChild(card);
+  }
+}
+
+loadIndex();
+</script>
+</body>
+</html>
