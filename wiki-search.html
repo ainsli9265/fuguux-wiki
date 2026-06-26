@@ -198,7 +198,15 @@
   .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 0.5rem; }
 
   .filter-section { margin-bottom: 1rem; }
-  .filter-label { font-size: 11px; color: var(--text-hint); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px; }
+  .filter-label {
+    font-size: 11px; color: var(--text-hint); text-transform: uppercase; letter-spacing: 0.05em;
+    margin-bottom: 5px; display: flex; align-items: center; gap: 5px; cursor: pointer; user-select: none;
+    width: fit-content;
+  }
+  .filter-label:hover { color: var(--text-muted); }
+  .filter-label .chevron { transition: transform 0.2s; display: inline-block; }
+  .filter-section.collapsed .chevron { transform: rotate(-90deg); }
+  .filter-section.collapsed .filters { display: none; }
 
   .filter-btn {
     height: 28px;
@@ -281,7 +289,10 @@
       <div id="filters" class="filters"></div>
     </div>
     <div class="filter-section" id="tag-filter-section" style="display:none">
-      <div class="filter-label">Tags</div>
+      <div class="filter-label" id="tag-filter-label">
+        Tags
+        <svg class="chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
       <div id="tag-filters" class="filters"></div>
     </div>
   </div>
@@ -405,6 +416,10 @@ function buildTagFilters() {
     renderResults(currentQuery);
   });
 }
+
+document.getElementById('tag-filter-label').addEventListener('click', () => {
+  tagFilterSection.classList.toggle('collapsed');
+});
 
 function activateTag(tag) {
   const btn = tagFiltersEl.querySelector('[data-tag="' + tag + '"]');
